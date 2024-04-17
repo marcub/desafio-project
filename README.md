@@ -6,8 +6,8 @@ If you want to try out the project just follow those steps:
 $ docker-compose up
 $ composer install
 $ npm install
-$ php -S localhost:8000 -t public/npm install
+$ synfony server:start
 $ npm run dev
-$ php bin/console doctrine:migration:migrate
-$ php bin/console doctrine:fixtures:load
+$ symfony console doctrine:migration:migrate
+$ symfony console doctrine:fixtures:load
 ```
