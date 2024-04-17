@@ -3,7 +3,6 @@
 If you want to try out the project just follow those steps:
 
 ```bash
-$ cp .env.template .env
 $ docker-compose up
 $ composer install
 $ npm install
