@@ -32,12 +32,14 @@ class VeiculoController extends AbstractController
     #[Route('/create', name: 'create', methods: ['POST'])]
     public function create(Request $request): Response
     {
+        $data = $request->getContentTypeFormat() === 'json' ? json_decode($request->getContent(), true) : $request->request->all();
+
         $timezone = new \DateTimeZone('America/Sao_Paulo');
 
         $veiculo = new Veiculo();
-        $veiculo->setCrlv($request->get('crlv'));
-        $veiculo->setNomeDoProprietario($request->get('nomeProprietario'));
-        $veiculo->setTipo($request->get('tipo'));
+        $veiculo->setCrlv($data['crlv']);
+        $veiculo->setNomeDoProprietario($data['nomeProprietario']);
+        $veiculo->setTipo($data['tipo']);
         $veiculo->setCreatedAt(new \DateTimeImmutable('now', $timezone));
         $veiculo->setUpdatedAt(new \DateTimeImmutable('now', $timezone));
 

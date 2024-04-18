@@ -25,10 +25,24 @@
                   <b-button
                     variant="primary"
                     id="show-btn"
-                    @click="showCreateModal"
+                    @click="showCreateMotoristaModal"
                   >
                     <b-icon-plus class="text-white"></b-icon-plus>
                     <span class="h6 text-white">Novo motorista</span>
+                  </b-button>
+                </b-col>
+              </b-row>
+            </b-col>
+            <b-col cols="2">
+              <b-row>
+                <b-col>
+                  <b-button
+                    variant="primary"
+                    id="show-btn"
+                    @click="showCreateVeiculoModal"
+                  >
+                    <b-icon-plus class="text-white"></b-icon-plus>
+                    <span class="h6 text-white">Novo veículo</span>
                   </b-button>
                 </b-col>
               </b-row>
@@ -48,14 +62,14 @@
                     <b-icon-pencil-square
                       class="action-item"
                       variant="primary"
-                      @click="getRowData(data.item.id)"
+                      @click="getRowMotoristaData(data.item.id)"
                     ></b-icon-pencil-square>
                   </b-col>
                   <b-col cols="1">
                     <b-icon-trash-fill
                       class="action-item"
                       variant="danger"
-                      @click="showDeleteModal(data.item.id)"
+                      @click="showDeleteMotoristaModal(data.item.id)"
                     ></b-icon-trash-fill>
                   </b-col>
                 </b-row>
@@ -65,48 +79,92 @@
         </b-card>
       </b-row>
   
-      <!-- Modal for adding new customers -->
+      <!-- Modal for adding new drivers -->
       <b-modal
         ref="create-motorista-modal"
         size="xl"
         hide-footer
-        title="New Customer"
+        title="Novo Motorista"
       >
         <create-motorista-form
-          @closeCreateModal="closeCreateModal"
+          @closeCreateMotoristaModal="closeCreateMotoristaModal"
           @reloadDataTable="getMotoristaData"
-          @showSuccessAlert="showAlertCreate"
+          @showSuccessAlert="showAlertMotoristaCreate"
         ></create-motorista-form>
       </b-modal>
-  
-      <!-- Modal for updating customers -->
+
+      <!-- Modal for adding new vehicles -->
       <b-modal
-        ref="edit-customer-modal"
+        ref="create-veiculo-modal"
         size="xl"
         hide-footer
-        title="Edit Customer"
+        title="Novo Veículo"
       >
-        <edit-customer-form
-          @closeEditModal="closeEditModal"
-          @reloadDataTable="getMotoristaData"
-          @showSuccessAlert="showAlertUpdate"
-          :motoristaId="motoristaId"
-        ></edit-customer-form>
+        <create-veiculo-form
+          @closeCreateVeiculoModal="closeCreateVeiculoModal"
+          @reloadDataTable="getVeiculoData"
+          @showSuccessAlert="showAlertVeiculoCreate"
+        ></create-veiculo-form>
       </b-modal>
   
-      <!-- Delete Customer Modal -->
+      <!-- Modal for updating drivers -->
       <b-modal
-        ref="delete-customer-modal"
+        ref="edit-motorista-modal"
+        size="xl"
+        hide-footer
+        title="Editar Motorista"
+      >
+        <edit-motorista-form
+          @closeEditMotoristaModal="closeEditMotoristaModal"
+          @reloadDataTable="getMotoristaData"
+          @showSuccessAlert="showAlertMotoristaUpdate"
+          :motoristaId="motoristaId"
+        ></edit-motorista-form>
+      </b-modal>
+
+      <!-- Modal for updating vehicles -->
+      <b-modal
+        ref="edit-veiculo-modal"
+        size="xl"
+        hide-footer
+        title="Editar Veículo"
+      >
+        <edit-veiculo-form
+          @closeEditVeiculoModal="closeEditVeiculoModal"
+          @reloadDataTable="getVeiculoData"
+          @showSuccessAlert="showAlertVeiculoUpdate"
+          :veiculoId="veiculoId"
+        ></edit-veiculo-form>
+      </b-modal>
+  
+      <!-- Delete Driver Modal -->
+      <b-modal
+        ref="delete-motorista-modal"
         size="md"
         hide-footer
-        title="Confirm Deletion"
+        title="Confirmação"
       >
-        <delete-customer-modal
-          @closeDeleteModal="closeDeleteModal"
+        <delete-motorista-modal
+          @closeDeleteMotoristaModal="closeDeleteMotoristaModal"
           @reloadDataTable="getMotoristaData"
-          @showDeleteAlert="showDeleteSuccessModal"
+          @showDeleteAlert="showDeleteMotoristaSuccessModal"
           :motoristaId="motoristaId"
-        ></delete-customer-modal>
+        ></delete-motorista-modal>
+      </b-modal>
+
+      <!-- Delete Vehicle Modal -->
+      <b-modal
+        ref="delete-veiculo-modal"
+        size="md"
+        hide-footer
+        title="Confirmação"
+      >
+        <delete-veiculo-modal
+          @closeDeleteVeiculoModal="closeDeleteVeiculoModal"
+          @reloadDataTable="getVeiculoData"
+          @showDeleteAlert="showDeleteVeiculoSuccessModal"
+          :veiculoId="veiculoId"
+        ></delete-veiculo-modal>
       </b-modal>
     </div>
   </template>
@@ -115,14 +173,16 @@
   import axios from "axios";
   import Overview from "./Overview.vue";
   import CreateMotoristaForm from "./CreateMotoristaForm.vue";
-  //import EditMotoristaForm from "./EditMotoristaForm.vue";
+  import CreateVeiculoForm from "./CreateVeiculoForm.vue";
+  import EditMotoristaForm from "./EditMotoristaForm.vue";
   //import DeleteMotoristaModal from "./DeleteMotoristaModal.vue";
   
   export default {
     components: {
       Overview,
-      CreateCustomerForm,
-      //EditCustomerForm,
+      CreateMotoristaForm,
+      CreateVeiculoForm,
+      EditMotoristaForm,
       //DeleteCustomerModal,
     },
     data() {
@@ -166,19 +226,57 @@
       this.getMotoristaData();
     },
     methods: {
-      showCreateModal() {
+      showCreateMotoristaModal() {
         this.$refs["create-motorista-modal"].show();
       },
-      closeCreateModal() {
+      showCreateVeiculoModal() {
+        this.$refs["create-veiculo-modal"].show();
+      },
+      closeCreateMotoristaModal() {
         this.$refs["create-motorista-modal"].hide();
+      },
+      closeCreateVeiculoModal() {
+        this.$refs["create-veiculo-modal"].hide();
       },
       getMotoristaData() {
         axios
           .get("http://localhost:8000/motoristas/")
           .then((response) => {
+            this.fields = [
+                {
+                  key: "nome",
+                  label: "Nome",
+                  sortable: false,
+                },
+                {
+                  key: "cpf",
+                  label: "CPF",
+                  sortable: false,
+                },
+                {
+                  key: "rg",
+                  label: "RG",
+                  sortable: false,
+                },
+                {
+                  key: "dataNascimento",
+                  label: "Data de Nascimento",
+                  sortable: false,
+                },
+                "actions",
+            ];
             this.tableHeader = "Total de motoristas";
             this.items = response.data;
             this.numeroDeMotoristas = response.data.length;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+          axios
+          .get("http://localhost:8000/veiculos/")
+          .then((response) => {
+            this.numeroDeVeiculos = response.data.length;
           })
           .catch((error) => {
             console.log(error);
@@ -219,12 +317,19 @@
             console.log(error);
           });
       },
-      getRowData(id) {
-        this.$refs["edit-customer-modal"].show();
+      getRowMotoristaData(id) {
+        this.$refs["edit-motorista-modal"].show();
         this.motoristaId = id;
       },
-      closeEditModal() {
-        this.$refs["edit-customer-modal"].hide();
+      getRowVeiculoData(id) {
+        this.$refs["edit-veiculo-modal"].show();
+        this.veiculoId = id;
+      },
+      closeEditMotoristaModal() {
+        this.$refs["edit-motorista-modal"].hide();
+      },
+      closeEditVeiculoModal() {
+        this.$refs["edit-veiculo-modal"].hide();
       },
       setFilterMotoristaIsActive() {
         this.tableHeader = "Total de motoristas";
@@ -234,24 +339,43 @@
         this.tableHeader = "Total de veículos";
         this.getVeiculoData();
       },
-      showAlertCreate() {
+      showAlertMotoristaCreate() {
         this.showSuccessAlert = true;
-        this.alertMessage = "Motorista foi criado com sucessa";
+        this.alertMessage = "Motorista foi criado com sucesso!";
       },
-      showAlertUpdate() {
+      showAlertVeiculoCreate() {
         this.showSuccessAlert = true;
-        this.alertMessage = "Motorista foi atualizado com sucesso";
+        this.alertMessage = "Veículo foi criado com sucesso!";
       },
-      showDeleteModal(id) {
-        this.$refs["delete-customer-modal"].show();
+      showAlertMotoristaUpdate() {
+        this.showSuccessAlert = true;
+        this.alertMessage = "Motorista foi atualizado com sucesso!";
+      },
+      showAlertVeiculoUpdate() {
+        this.showSuccessAlert = true;
+        this.alertMessage = "Veículo foi atualizado com sucesso!";
+      },
+      showDeleteMotoristaModal(id) {
+        this.$refs["delete-motorista-modal"].show();
         this.motoristaId = id;
       },
-      closeDeleteModal() {
-        this.$refs["delete-customer-modal"].hide();
+      showDeleteVeiculoModal(id) {
+        this.$refs["delete-veiculo-modal"].show();
+        this.veiculoId = id;
       },
-      showDeleteSuccessModal() {
+      closeDeleteMotoristaModal() {
+        this.$refs["delete-motorista-modal"].hide();
+      },
+      closeDeleteVeiculoModal() {
+        this.$refs["delete-veiculo-modal"].hide();
+      },
+      showDeleteMotoristaSuccessModal() {
         this.showSuccessAlert = true;
         this.alertMessage = "Motorista foi deletado com sucesso!";
+      },
+      showDeleteVeiculoSuccessModal() {
+        this.showSuccessAlert = true;
+        this.alertMessage = "Veículo foi deletado com sucesso!";
       },
     },
   };

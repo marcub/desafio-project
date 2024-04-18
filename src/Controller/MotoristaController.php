@@ -25,29 +25,37 @@ class MotoristaController extends AbstractController
     }
 
     #[Route('/', name: 'getMotoristas', methods: ['GET'])]
-    public function index(): Response
+    public function getMotoristas(): Response
     {
         $motoristas = $this->motoristaRepository->findAll();
         return $this->json($motoristas, Response::HTTP_OK, [], ['groups' => 'motorista']);
     }
 
+    #[Route('/{id}', name: 'getMotoristaById', methods: ['GET'])]
+    public function getMotoristaById(Motorista $motorista): Response
+    {
+        return $this->json($motorista, Response::HTTP_OK, [], ['groups' => 'motorista']);
+    }
+
     #[Route('/create', name: 'create', methods: ['POST'])]
     public function create(Request $request): Response
     {
+        $data = $request->getContentTypeFormat() === 'json' ? json_decode($request->getContent(), true) : $request->request->all();
+
         $timezone = new \DateTimeZone('America/Sao_Paulo');
 
         $motorista = new Motorista();
-        $motorista->setNome($request->get('nome'));
-        $motorista->setCpf($request->get('cpf'));
-        $motorista->setRg($request->get('rg'));
+        $motorista->setNome($data['nome']);
+        $motorista->setCpf($data['cpf']);
+        $motorista->setRg($data['rg']);
 
         $cnh = new Cnh();
-        $cnh->setNumero($request->get('cnh'));
-        $cnh->setValidade(new \DateTime($request->get('validade'), $timezone));
-        $cnh->setCategoria($request->get('categoria'));
+        $cnh->setNumero($data['cnh']);
+        $cnh->setValidade(new \DateTime($data['validade'], $timezone));
+        $cnh->setCategoria($data['categoria']);
 
         $motorista->setCnh($cnh);
-        $motorista->setDataNascimento(new \DateTime($request->get('dataNascimento'), $timezone));
+        $motorista->setDataNascimento(new \DateTime($data['dataNascimento'], $timezone));
         $motorista->setCreatedAt(new \DateTimeImmutable('now', $timezone));
         $motorista->setUpdatedAt(new \DateTimeImmutable('now', $timezone));
 

@@ -66,7 +66,7 @@
               id="cnh"
               type="text"
               placeholder="Número"
-              v-model="motorista.cnh"
+              v-model="motorista.cnh.numero"
             ></b-form-input>
           </b-form-group>
         </b-col>
@@ -81,7 +81,7 @@
             <b-form-input
               id="validade"
               type="date"
-              v-model="motorista.validade"
+              v-model="motorista.cnh.validade"
             ></b-form-input>
           </b-form-group>
         </b-col>
@@ -97,8 +97,8 @@
       </b-row>
       <b-row class="mt-4">
         <b-col cols="3">
-          <b-button variant="primary" class="px-5" @click="addNewMotorista"
-            >Criar Motorista</b-button
+          <b-button variant="primary" class="px-5" @click="updateMotorista"
+            >Atualizar motorista</b-button
           >
         </b-col>
         <b-col>
@@ -106,13 +106,16 @@
         </b-col>
       </b-row>
     </b-form>
-  </template>
+</template>
   
-  <script>
+<script>
   import axios from "axios";
   
   export default {
     name: "CreateMotoristaModal",
+    props: {
+      motoristaId: Number,
+    },
     data() {
       return {
         motorista: {},
@@ -125,16 +128,34 @@
         ]
       };
     },
+    mounted() {
+      this.getMotoristaByID();
+    },
     methods: {
       triggerClose() {
-        this.$emit("closeCreateMotoristaModal");
+        this.$emit("closeEditMotoristaModal");
       },
-      addNewMotorista() {
+      getMotoristaByID() {
         axios
-          .post("http://localhost:8000/motoristas/create", this.motorista)
+          .get(`http://localhost:8000/motoristas/${this.motoristaId}`)
+          .then((response) => {
+            response.data.dataNascimento = response.data.dataNascimento.substring(0, 10);
+            response.data.cnh.validade = response.data.cnh.validade.substring(0, 10);
+            this.motorista = response.data;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+      updateMotorista() {
+        axios
+          .put(
+            `http://localhost:8000/motoristas/update/${this.motoristaId}`,
+            this.motorista
+          )
           .then((response) => {
             console.log(response.data);
-            this.$emit("closeCreateMotoristaModal");
+            this.$emit("closeEditMotoristaModal");
             this.$emit("reloadDataTable");
             this.$emit("showSuccessAlert");
           })
@@ -144,4 +165,4 @@
       },
     },
   };
-  </script>
+</script>
