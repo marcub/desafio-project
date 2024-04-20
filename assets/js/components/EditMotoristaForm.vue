@@ -90,19 +90,19 @@
         <b-form-group id="categoria" label="Categoria" label-for="categoria">
             <b-form-select
               id="categoria"
-              v-model="motorista.categoria"
+              v-model="motorista.cnh.categoria"
               :options="options"
             ></b-form-select>
           </b-form-group>
       </b-row>
-      <b-row class="mt-4">
+      <b-row class="mt-4" style="justify-content: space-between;">
         <b-col cols="3">
           <b-button variant="primary" class="px-5" @click="updateMotorista"
             >Atualizar motorista</b-button
           >
         </b-col>
-        <b-col>
-          <b-button variant="warning" @click="triggerClose">Fechar</b-button>
+        <b-col cols="1">
+          <b-button variant="danger" @click="triggerClose">Fechar</b-button>
         </b-col>
       </b-row>
     </b-form>
@@ -112,7 +112,7 @@
   import axios from "axios";
   
   export default {
-    name: "CreateMotoristaModal",
+    name: "EditMotoristaModal",
     props: {
       motoristaId: Number,
     },

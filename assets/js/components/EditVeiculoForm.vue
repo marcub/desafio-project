@@ -1,6 +1,6 @@
 <template>
     <b-form class="mt-3">
-      <b-row>
+        <b-row>
         <b-row>
           <h4 class="text-secondary">Informações</h4>
         </b-row>
@@ -38,8 +38,8 @@
       </b-row>
       <b-row class="mt-4" style="justify-content: space-between;">
         <b-col cols="3">
-          <b-button variant="primary" class="px-5" @click="addNewVeiculo"
-            >Criar Veiculo</b-button
+          <b-button variant="primary" class="px-5" @click="updateVeiculo"
+            >Atualizar veículo</b-button
           >
         </b-col>
         <b-col cols="1">
@@ -47,36 +47,55 @@
         </b-col>
       </b-row>
     </b-form>
-  </template>
+</template>
   
-  <script>
+<script>
   import axios from "axios";
   
   export default {
-    name: "CreateVeiculoModal",
+    name: "EditVeiculoModal",
+    props: {
+      veiculoId: Number,
+    },
     data() {
       return {
         veiculo: {},
         options: [
-          'Caminhões Leves', 
-          'Caminhões Pesados', 
-          'Veículos de Carga Especializada', 
-          'Veículos de Entrega Expressa', 
-          'Veículos de Transporte Intermodal', 
-          'Veículos Autônomos'
+            'Caminhões Leves', 
+            'Caminhões Pesados', 
+            'Veículos de Carga Especializada', 
+            'Veículos de Entrega Expressa', 
+            'Veículos de Transporte Intermodal', 
+            'Veículos Autônomos'
         ]
       };
     },
+    mounted() {
+      this.getVeiculoByID();
+    },
     methods: {
       triggerClose() {
-        this.$emit("closeCreateVeiculoModal");
+        this.$emit("closeEditVeiculoModal");
       },
-      addNewVeiculo() {
+      getVeiculoByID() {
         axios
-          .post("http://localhost:8000/veiculos/create", this.veiculo)
+          .get(`http://localhost:8000/veiculos/${this.veiculoId}`)
+          .then((response) => {
+            this.veiculo = response.data;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+      updateVeiculo() {
+        axios
+          .put(
+            `http://localhost:8000/veiculos/update/${this.veiculoId}`,
+            this.veiculo
+          )
           .then((response) => {
             console.log(response.data);
-            this.$emit("closeCreateVeiculoModal");
+            this.$emit("closeEditVeiculoModal");
             this.$emit("reloadDataTable");
             this.$emit("showSuccessAlert");
           })
@@ -86,4 +105,4 @@
       },
     },
   };
-  </script>
+</script>

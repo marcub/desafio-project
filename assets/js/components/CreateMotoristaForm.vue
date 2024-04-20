@@ -95,14 +95,14 @@
             ></b-form-select>
           </b-form-group>
       </b-row>
-      <b-row class="mt-4">
+      <b-row class="mt-4" style="justify-content: space-between;">
         <b-col cols="3">
           <b-button variant="primary" class="px-5" @click="addNewMotorista"
             >Criar Motorista</b-button
           >
         </b-col>
-        <b-col>
-          <b-button variant="warning" @click="triggerClose">Fechar</b-button>
+        <b-col cols="1">
+          <b-button variant="danger" @click="triggerClose">Fechar</b-button>
         </b-col>
       </b-row>
     </b-form>

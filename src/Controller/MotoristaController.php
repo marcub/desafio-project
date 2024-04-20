@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Motorista;
 use App\Entity\Cnh;
 use App\Repository\MotoristaRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\Request;
 
 #[Route('/motoristas', name: 'motorista_')]
@@ -29,6 +30,41 @@ class MotoristaController extends AbstractController
     {
         $motoristas = $this->motoristaRepository->findAll();
         return $this->json($motoristas, Response::HTTP_OK, [], ['groups' => 'motorista']);
+    }
+
+    #[Route('/page', name: 'getMotoristasByPage', methods: ['GET'])]
+    public function getMotoristasByPage(Request $request): Response
+    {
+        $page = $request->query->getInt('page', 1);
+        $pageSize = $request->query->getInt('pageSize', 20);
+        $searchNome = $request->query->get('nome');
+
+        $query = $this->entityManager->createQueryBuilder()
+                ->select('m')
+                ->from('App\Entity\Motorista', 'm')
+                ->where("m.nome LIKE '%" . $searchNome . "%'")
+                ->orderBy('m.id', 'DESC')
+                ->setFirstResult(($page - 1) * $pageSize)
+                ->setMaxResults($pageSize)
+                ->getQuery();
+
+        $paginator = new Paginator($query);
+
+        $motoristas = [];
+
+        foreach ($paginator as $motorista) {
+            $motoristas[] = $motorista;
+        }
+
+        $totalMotoristas = count($paginator);
+        $totalPages = ceil($totalMotoristas / $pageSize);
+
+        return $this->json([
+            'totalItems' => $totalMotoristas,
+            'motoristas' => $motoristas,
+            'totalPages' => $totalPages,
+            'currentPage' => $page
+        ], Response::HTTP_OK, [], ['groups' => 'motorista']);
     }
 
     #[Route('/{id}', name: 'getMotoristaById', methods: ['GET'])]
@@ -78,19 +114,21 @@ class MotoristaController extends AbstractController
     #[Route('/update/{id}', name: 'update', methods: ['PUT'])]
     public function update(Motorista $motorista, Request $request): Response
     {
+        $data = $request->getContentTypeFormat() === 'json' ? json_decode($request->getContent(), true) : $request->request->all();
+
         $timezone = new \DateTimeZone('America/Sao_Paulo');
 
         if(!$motorista) {
             throw $this->createNotFoundException();
         }
 
-        $motorista->setNome($request->get('nome'));
-        $motorista->setCpf($request->get('cpf'));
-        $motorista->setRg($request->get('rg'));
-        $motorista->getCnh()->setNumero($request->get('cnh'));
-        $motorista->getCnh()->setValidade(new \DateTime($request->get('validade'), $timezone));
-        $motorista->getCnh()->setCategoria($request->get('categoria'));
-        $motorista->setDataNascimento(new \DateTime($request->get('dataNascimento'), $timezone));
+        $motorista->setNome($data['nome']);
+        $motorista->setCpf($data['cpf']);
+        $motorista->setRg($data['rg']);
+        $motorista->getCnh()->setNumero($data['cnh']['numero']);
+        $motorista->getCnh()->setValidade(new \DateTime($data['cnh']['validade'], $timezone));
+        $motorista->getCnh()->setCategoria($data['cnh']['categoria']);
+        $motorista->setDataNascimento(new \DateTime($data['dataNascimento'], $timezone));
         $motorista->setUpdatedAt(new \DateTimeImmutable('now', $timezone));
 
         $this->entityManager->getConnection()->beginTransaction();

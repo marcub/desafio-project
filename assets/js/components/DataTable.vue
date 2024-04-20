@@ -19,33 +19,70 @@
             <b-col cols="6">
               <h3>{{ tableHeader }}</h3>
             </b-col>
-            <b-col cols="2">
-              <b-row>
-                <b-col>
-                  <b-button
-                    variant="primary"
-                    id="show-btn"
-                    @click="showCreateMotoristaModal"
-                  >
-                    <b-icon-plus class="text-white"></b-icon-plus>
-                    <span class="h6 text-white">Novo motorista</span>
-                  </b-button>
-                </b-col>
+            <b-col cols="6">
+              <b-row style="justify-content: end;">
+                <b-button flex
+                  variant="primary"
+                  id="show-btn"
+                  style="width: auto"
+                  @click="showCreateMotoristaModal"
+                >
+                  <b-icon-plus class="text-white"></b-icon-plus>
+                  <span class="h6 text-white">Novo motorista</span>
+                </b-button>
+                <b-button flex
+                  class="ms-2"
+                  variant="primary"
+                  id="show-btn"
+                  style="width: auto"
+                  @click="showCreateVeiculoModal"
+                >
+                  <b-icon-plus class="text-white"></b-icon-plus>
+                  <span class="h6 text-white">Novo veículo</span>
+                </b-button>
               </b-row>
             </b-col>
-            <b-col cols="2">
-              <b-row>
-                <b-col>
-                  <b-button
-                    variant="primary"
-                    id="show-btn"
-                    @click="showCreateVeiculoModal"
+          </b-row>
+          <b-row v-show="showFilterMotorista">
+            <b-col class="mb-3 mt-3">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Procure pelo nome"
+                  v-model="searchNome"
+                />
+                <div class="input-group-append">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    @click="page = 1; getMotoristaData();"
                   >
-                    <b-icon-plus class="text-white"></b-icon-plus>
-                    <span class="h6 text-white">Novo veículo</span>
-                  </b-button>
-                </b-col>
-              </b-row>
+                    <b-icon icon="search"></b-icon>
+                  </button>
+                </div>
+              </div>
+            </b-col>
+          </b-row>
+          <b-row v-show="showFilterVeiculo">
+            <b-col class="mb-3 mt-3">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Procure pelo nome do proprietário"
+                  v-model="searchNome"
+                />
+                <div class="input-group-append">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    @click="page = 1; getVeiculoData()"
+                  >
+                    <b-icon icon="search"></b-icon>
+                  </button>
+                </div>
+              </div>
             </b-col>
           </b-row>
           <b-row class="mt-3">
@@ -56,7 +93,7 @@
               :fields="fields"
               class="text-center"
             >
-              <template #cell(actions)="data">
+              <template #cell(actionsMotorista)="data">
                 <b-row>
                   <b-col cols="7">
                     <b-icon-pencil-square
@@ -74,7 +111,31 @@
                   </b-col>
                 </b-row>
               </template>
+              <template #cell(actionsVeiculo)="data">
+                <b-row>
+                  <b-col cols="7">
+                    <b-icon-pencil-square
+                      class="action-item"
+                      variant="primary"
+                      @click="getRowVeiculoData(data.item.id)"
+                    ></b-icon-pencil-square>
+                  </b-col>
+                  <b-col cols="1">
+                    <b-icon-trash-fill
+                      class="action-item"
+                      variant="danger"
+                      @click="showDeleteVeiculoModal(data.item.id)"
+                    ></b-icon-trash-fill>
+                  </b-col>
+                </b-row>
+              </template>
             </b-table>
+            <b-pagination
+              v-model="page"
+              :total-rows="count"
+              :per-page="pageSize"
+              @change = "handlePageChange"
+            ></b-pagination>
           </b-row>
         </b-card>
       </b-row>
@@ -175,7 +236,9 @@
   import CreateMotoristaForm from "./CreateMotoristaForm.vue";
   import CreateVeiculoForm from "./CreateVeiculoForm.vue";
   import EditMotoristaForm from "./EditMotoristaForm.vue";
-  //import DeleteMotoristaModal from "./DeleteMotoristaModal.vue";
+  import EditVeiculoForm from "./EditVeiculoForm.vue";
+  import DeleteMotoristaModal from "./DeleteMotoristaModal.vue";
+  import DeleteVeiculoModal from "./DeleteVeiculoModal.vue";
   
   export default {
     components: {
@@ -183,7 +246,9 @@
       CreateMotoristaForm,
       CreateVeiculoForm,
       EditMotoristaForm,
-      //DeleteCustomerModal,
+      EditVeiculoForm,
+      DeleteMotoristaModal,
+      DeleteVeiculoModal,
     },
     data() {
       return {
@@ -209,8 +274,29 @@
             label: "Data de Nascimento",
             sortable: false,
           },
-          "actions",
+          {
+            key: "cnh.numero",
+            label: "Número da CNH",
+            sortable: false,
+          },
+          {
+            key: "cnh.categoria",
+            label: "Categorria",
+            sortable: false,
+          },
+          {
+            key: "cnh.validade",
+            label: "Validade",
+            sortable: false,
+          },
+          {
+            key: "actionsMotorista",
+            label: "Ações",
+            sortable: false,
+          },
         ],
+        showFilterMotorista: true,
+        showFilterVeiculo:false,
         items: [],
         numeroDeMotoristas: 0,
         numeroDeVeiculos: 0,
@@ -220,6 +306,10 @@
         tableHeader: "",
         showSuccessAlert: false,
         alertMessage: "",
+        page: 1,
+        pageSize: 10,
+        count: null,
+        searchNome: "",
       };
     },
     mounted() {
@@ -238,9 +328,39 @@
       closeCreateVeiculoModal() {
         this.$refs["create-veiculo-modal"].hide();
       },
+      handlePageChange(value) {
+        this.page = value;
+        if (this.showFilterMotorista) {
+          this.getMotoristaData();
+        } else {
+          this.getVeiculoData();
+        }
+      },
+      /*reloadMotoristaTable() {
+        this.toggleFilters();
+        this.getMotoristaData();
+        console.log(this.showFilterMotorista);
+        console.log(this.showFilterVeiculo);
+      },
+      reloadVeiculoTable() {
+        this.toggleFilters();
+        this.getVeiculoData();
+      },*/
+      toggleFilters() {
+        this.showFilterVeiculo = !this.showFilterVeiculo;
+        this.showFilterMotorista = !this.showFilterMotorista;
+      },
       getMotoristaData() {
         axios
-          .get("http://localhost:8000/motoristas/")
+          .get("http://localhost:8000/motoristas/page", 
+          {
+            params: {
+              nome: this.searchNome,
+              page: this.page,
+              pageSize: this.pageSize,
+              
+            }
+          })
           .then((response) => {
             this.fields = [
                 {
@@ -263,11 +383,36 @@
                   label: "Data de Nascimento",
                   sortable: false,
                 },
-                "actions",
+                {
+                  key: "cnh.numero",
+                  label: "Número da CNH",
+                  sortable: false,
+                },
+                {
+                  key: "cnh.categoria",
+                  label: "Categorria",
+                  sortable: false,
+                },
+                {
+                  key: "cnh.validade",
+                  label: "Validade",
+                  sortable: false,
+                },
+                {
+                  key: "actionsMotorista",
+                  label: "Ações",
+                  sortable: false,
+                },
             ];
             this.tableHeader = "Total de motoristas";
-            this.items = response.data;
-            this.numeroDeMotoristas = response.data.length;
+            response.data.motoristas.forEach((item, index) => {
+              var dateNascimento = new Date(item.dataNascimento.substring(0, 10));
+              item.dataNascimento = dateNascimento.toLocaleDateString("pt-BR");
+              var dateValidade = new Date(item.cnh.validade.substring(0, 10));
+              item.cnh.validade = dateValidade.toLocaleDateString("pt-BR");
+            });
+            this.items = response.data.motoristas;
+            this.count = response.data.totalItems;
           })
           .catch((error) => {
             console.log(error);
@@ -281,10 +426,27 @@
           .catch((error) => {
             console.log(error);
           });
+
+          axios
+          .get("http://localhost:8000/motoristas/")
+          .then((response) => {
+            this.numeroDeMotoristas = response.data.length;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       },
       getVeiculoData() {
         axios
-          .get("http://localhost:8000/veiculos/")
+          .get("http://localhost:8000/veiculos/page", 
+          {
+            params: {
+              nome: this.searchNome,
+              page: this.page,
+              pageSize: this.pageSize,
+              
+            }
+          })
           .then((response) => {
             this.fields = [
                 {
@@ -307,11 +469,37 @@
                     label: "Data de criação",
                     sortable: false,
                 },
-                "actions",
+                {
+                  key: "actionsVeiculo",
+                  label: "Ações",
+                  sortable: false,
+                },
             ];
             this.tableHeader = "Total de veículos";
-            this.items = response.data;
+            response.data.veiculos.forEach((item, index) => {
+              var dateCriacao = new Date(item.createdAt);
+              item.createdAt = dateCriacao.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            });
+            this.items = response.data.veiculos;
+            this.count = response.data.totalItems;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+          axios
+          .get("http://localhost:8000/veiculos/")
+          .then((response) => {
             this.numeroDeVeiculos = response.data.length;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+          axios
+          .get("http://localhost:8000/motoristas/")
+          .then((response) => {
+            this.numeroDeMotoristas = response.data.length;
           })
           .catch((error) => {
             console.log(error);
@@ -333,10 +521,16 @@
       },
       setFilterMotoristaIsActive() {
         this.tableHeader = "Total de motoristas";
+        this.page = 1;
+        this.searchNome = "";
+        this.toggleFilters();
         this.getMotoristaData();
       },
       setFilterVeiculoIsActive() {
         this.tableHeader = "Total de veículos";
+        this.page = 1;
+        this.searchNome = "";
+        this.toggleFilters();
         this.getVeiculoData();
       },
       showAlertMotoristaCreate() {

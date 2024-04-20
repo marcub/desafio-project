@@ -1,12 +1,12 @@
 <template>
     <b-navbar toggleable="lg" type="dark" variant="primary">
         <b-container>
-            <b-row class="text-white">
-                <b-col>
+            <b-row class="text-white w-100" align-h="start">
+                <b-col cols="1">
                     <b-icon-people-fill class="h2"></b-icon-people-fill>
                 </b-col>
-                <b-col>
-                    <span class="h3">CRM</span>
+                <b-col cols="4">
+                    <span class="h3">Logistic Manager</span>
                 </b-col>
             </b-row>
         </b-container>
