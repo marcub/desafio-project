@@ -12,6 +12,6 @@ class MotoristaFixture extends Fixture
     public function load(ObjectManager $manager): void
     {
 
-        MotoristaFactory::createMany(20);
+        MotoristaFactory::createMany(1000);
     }
 }

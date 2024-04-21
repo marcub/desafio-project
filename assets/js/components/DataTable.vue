@@ -381,7 +381,7 @@
         showSuccessAlert: false,
         alertMessage: "",
         page: 1,
-        pageSize: 10,
+        pageSize: 50,
         count: null,
         searchNome: null,
         searchCategoria: null,

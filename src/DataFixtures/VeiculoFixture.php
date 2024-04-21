@@ -10,6 +10,6 @@ class VeiculoFixture extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        VeiculoFactory::createMany(20);
+        VeiculoFactory::createMany(1000);
     }
 }
