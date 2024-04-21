@@ -38,15 +38,38 @@ class MotoristaController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $pageSize = $request->query->getInt('pageSize', 20);
         $searchNome = $request->query->get('nome');
+        $searchCategoria = $request->query->get('categoria');
+        $searchStartDate = $request->query->get('startDate');
+        $searchEndDate = $request->query->get('endDate');
 
-        $query = $this->entityManager->createQueryBuilder()
-                ->select('m')
+        $query = $this->entityManager->createQueryBuilder();
+        $query->select('m')
                 ->from('App\Entity\Motorista', 'm')
-                ->where("m.nome LIKE '%" . $searchNome . "%'")
+                ->innerJoin("m.cnh", "c", "m.cnh = c.id")
                 ->orderBy('m.id', 'DESC')
                 ->setFirstResult(($page - 1) * $pageSize)
                 ->setMaxResults($pageSize)
                 ->getQuery();
+
+        if (!empty($searchNome)) {
+            $query->andWhere("UPPER(m.nome) LIKE :nome")
+                ->setParameter('nome', '%' . strtoupper($searchNome) . '%');
+        }
+        
+        if (!empty($searchStartDate)) {
+            $query->andWhere("m.dataNascimento >= :startDate")
+                ->setParameter('startDate', $searchStartDate);
+        }
+
+        if (!empty($searchEndDate)) {
+            $query->andWhere("m.dataNascimento <= :endDate")
+                ->setParameter('endDate', $searchEndDate);
+        }
+        
+        if (!empty($searchCategoria)) {
+            $query->andWhere("c.categoria = :categoria")
+                ->setParameter('categoria', $searchCategoria);
+        }
 
         $paginator = new Paginator($query);
 

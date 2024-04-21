@@ -36,15 +36,37 @@ class VeiculoController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $pageSize = $request->query->getInt('pageSize', 20);
         $searchNome = $request->query->get('nome');
+        $searchTipo = $request->query->get('tipo');
+        $searchStartDate = $request->query->get('startDate');
+        $searchEndDate = $request->query->get('endDate');
 
-        $query = $this->entityManager->createQueryBuilder()
-                ->select('v')
+        $query = $this->entityManager->createQueryBuilder();
+        $query->select('v')
                 ->from('App\Entity\Veiculo', 'v')
-                ->where("v.nomeDoProprietario LIKE '%" . $searchNome . "%'")
                 ->orderBy('v.id', 'DESC')
                 ->setFirstResult(($page - 1) * $pageSize)
                 ->setMaxResults($pageSize)
                 ->getQuery();
+
+        if (!empty($searchNome)) {
+            $query->andWhere("UPPER(v.nomeDoProprietario) LIKE :nome")
+                ->setParameter('nome', '%' . strtoupper($searchNome) . '%');
+        }
+        
+        if (!empty($searchStartDate)) {
+            $query->andWhere("v.createdAt >= :startDate")
+                ->setParameter('startDate', $searchStartDate);
+        }
+
+        if (!empty($searchEndDate)) {
+            $query->andWhere("v.createdAt <= :endDate")
+                ->setParameter('endDate', $searchEndDate);
+        }
+        
+        if (!empty($searchTipo)) {
+            $query->andWhere("v.tipo = :tipo")
+                ->setParameter('tipo', $searchTipo);
+        }
 
         $paginator = new Paginator($query);
 

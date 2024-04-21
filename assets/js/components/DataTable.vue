@@ -44,46 +44,120 @@
             </b-col>
           </b-row>
           <b-row v-show="showFilterMotorista">
-            <b-col class="mb-3 mt-3">
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Procure pelo nome"
-                  v-model="searchNome"
-                />
-                <div class="input-group-append">
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="page = 1; getMotoristaData();"
-                  >
-                    <b-icon icon="search"></b-icon>
-                  </button>
+            <b-row>
+              <b-col class="mb-3 mt-3">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Procure pelo nome"
+                    v-model="searchNome"
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      @click="page = 1; getMotoristaData();"
+                    >
+                      <b-icon icon="search"></b-icon>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </b-col>
+              </b-col>
+            </b-row>
+            <b-row class="mt-2">
+              <b-col cols="2">
+                <b-form-group label="Categoria CNH">
+                  <b-form-select
+                    id="categoria"
+                    class="form-select"
+                    v-model="searchCategoria"
+                    :options="optionsCategoria"
+                    @change="getMotoristaData"
+                  ></b-form-select>
+                </b-form-group>
+              </b-col>
+              <b-col cols="10">
+                <b-form-group label="Data de Nascimento">
+                  <b-row
+                  class="ms-0"
+                  >
+                    <label class="ms-0" style="width: fit-content; align-self: center;">De: </label>
+                    <b-form-input
+                      class="w-25"
+                      type="date"
+                      v-model="searchStartDate"
+                      @input="getMotoristaData"
+                    ></b-form-input>
+                    <label style="width: fit-content; align-self: center;">Até: </label>
+                    <b-form-input
+                      class="w-25"
+                      type="date"
+                      v-model="searchEndDate"
+                      @input="getMotoristaData"
+                    ></b-form-input>
+                  </b-row>
+                </b-form-group>
+              </b-col>
+            </b-row>
           </b-row>
           <b-row v-show="showFilterVeiculo">
-            <b-col class="mb-3 mt-3">
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Procure pelo nome do proprietário"
-                  v-model="searchNome"
-                />
-                <div class="input-group-append">
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="page = 1; getVeiculoData()"
-                  >
-                    <b-icon icon="search"></b-icon>
-                  </button>
+            <b-row>
+              <b-col class="mb-3 mt-3">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Procure pelo nome do proprietário"
+                    v-model="searchNome"
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      @click="page = 1; getVeiculoData()"
+                    >
+                      <b-icon icon="search"></b-icon>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </b-col>
+              </b-col>
+            </b-row>
+            <b-row class="mt-2">
+              <b-col cols="2">
+                <b-form-group label="Tipo">
+                  <b-form-select
+                    id="tipo"
+                    class="form-select"
+                    v-model="searchTipo"
+                    :options="optionsTipo"
+                    @change="getVeiculoData"
+                  ></b-form-select>
+                </b-form-group>
+              </b-col>
+              <b-col cols="10">
+                <b-form-group label="Data de criação">
+                  <b-row
+                  class="ms-0"
+                  >
+                    <label style="width: fit-content; align-self: center;">De: </label>
+                    <b-form-input
+                      class="w-25"
+                      type="date"
+                      v-model="searchStartDate"
+                      @input="getVeiculoData"
+                    ></b-form-input>
+                    <label style="width: fit-content; align-self: center;">Até: </label>
+                    <b-form-input
+                      class="w-25"
+                      type="date"
+                      v-model="searchEndDate"
+                      @input="getVeiculoData"
+                    ></b-form-input>
+                  </b-row>
+                </b-form-group>
+              </b-col>
+            </b-row>
           </b-row>
           <b-row class="mt-3">
             <b-table
@@ -309,7 +383,28 @@
         page: 1,
         pageSize: 10,
         count: null,
-        searchNome: "",
+        searchNome: null,
+        searchCategoria: null,
+        searchStartDate: null,
+        searchEndDate: null,
+        searchTipo: null,
+        optionsCategoria: [
+          { value: null, text: 'Todos' },
+          'A', 
+          'B', 
+          'C', 
+          'D', 
+          'E'
+        ],
+        optionsTipo: [
+          { value: null, text: 'Todos' },
+          'Caminhões Leves', 
+          'Caminhões Pesados', 
+          'Veículos de Carga Especializada', 
+          'Veículos de Entrega Expressa', 
+          'Veículos de Transporte Intermodal', 
+          'Veículos Autônomos'
+        ],
       };
     },
     mounted() {
@@ -336,16 +431,6 @@
           this.getVeiculoData();
         }
       },
-      /*reloadMotoristaTable() {
-        this.toggleFilters();
-        this.getMotoristaData();
-        console.log(this.showFilterMotorista);
-        console.log(this.showFilterVeiculo);
-      },
-      reloadVeiculoTable() {
-        this.toggleFilters();
-        this.getVeiculoData();
-      },*/
       toggleFilters() {
         this.showFilterVeiculo = !this.showFilterVeiculo;
         this.showFilterMotorista = !this.showFilterMotorista;
@@ -356,6 +441,9 @@
           {
             params: {
               nome: this.searchNome,
+              categoria: this.searchCategoria,
+              startDate: this.searchStartDate,
+              endDate: this.searchEndDate,
               page: this.page,
               pageSize: this.pageSize,
               
@@ -442,6 +530,9 @@
           {
             params: {
               nome: this.searchNome,
+              tipo: this.searchTipo,
+              startDate: this.searchStartDate,
+              endDate: this.searchEndDate,
               page: this.page,
               pageSize: this.pageSize,
               
@@ -522,14 +613,22 @@
       setFilterMotoristaIsActive() {
         this.tableHeader = "Total de motoristas";
         this.page = 1;
-        this.searchNome = "";
+        this.searchNome = null;
+        this.searchCategoria = null;
+        this.searchTipo = null;
+        this.searchStartDate = null;
+        this.searchEndDate = null;
         this.toggleFilters();
         this.getMotoristaData();
       },
       setFilterVeiculoIsActive() {
         this.tableHeader = "Total de veículos";
         this.page = 1;
-        this.searchNome = "";
+        this.searchNome = null;
+        this.searchCategoria = null;
+        this.searchTipo = null;
+        this.searchStartDate = null;
+        this.searchEndDate = null;
         this.toggleFilters();
         this.getVeiculoData();
       },
